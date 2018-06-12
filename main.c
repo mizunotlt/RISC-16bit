@@ -210,29 +210,7 @@ int main(){
     for (int i = 0; i < REG; i++){
         regMemory[i] = 0;
     }
-    //в зависимости от типа комнды будет обращать к тому или иному типу структуры
-    struct command{
-        char *command;
-        struct commandRRR{
-            short int regA;
-            short int regB;
-            short int regC;
-        };
-        struct commandRRI{
-            short int regAA;
-            short int regBB;
-            short int imm;
-        };
-        struct commandRI{
-            short int reA;
-            short int im;
-        };
-        struct commandRRR rrrCom ;
-        struct commandRRI rriCom;
-        struct commandRI riCom;
-    };
     struct command* command = malloc(sizeof(struct command) * 100);
-
     char inputCom[MAXLENGTHLINE];
 
     char *fileName = "command.txt";
@@ -382,7 +360,12 @@ int main(){
                 char *outDebugName = "outDebug.txt";
                 FILE *outDebug;
                 outDebug = fopen(outDebugName, "wt");
-                int stepCount = 2;
+                int stepCount = 0;
+                printf("Count Step \n");
+                int answer;
+                int temp;
+                answer = scanf("%d", &temp);
+                stepCount = temp;
                 countCom = 0;
                 while (countCom != stepCount){
                     if (!strcmp(command[countCom].command, "ADD")){
