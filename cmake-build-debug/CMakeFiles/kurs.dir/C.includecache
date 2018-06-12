@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/User/Desktop/kurs/kurs/main.c
+stdio.h
+-
+stdlib.h
+-
+stdbool.h
+-
+mem.h
+-
+math.h
+-
+risc.h
+C:/Users/User/Desktop/kurs/kurs/risc.h
+
+C:/Users/User/Desktop/kurs/kurs/risc.h
+stdio.h
+-
+stdlib.h
+-
+stdbool.h
+-
+mem.h
+-
+math.h
+-
+
+C:/Users/User/Desktop/kurs/kurs/startRISC.c
+risc.h
+C:/Users/User/Desktop/kurs/kurs/risc.h
+
