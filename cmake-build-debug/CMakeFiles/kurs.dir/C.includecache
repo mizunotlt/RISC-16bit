@@ -13,7 +13,7 @@ stdlib.h
 -
 stdbool.h
 -
-mem.h
+string.h
 -
 math.h
 -

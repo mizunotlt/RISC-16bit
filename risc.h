@@ -9,6 +9,13 @@
 
 int menu();
 
+#define MAXLENGTHLINE 32
+#define MAX_COMMAND 100
+#define REG 8
+#define MEMORY_SIZE 1000
+
+
+
 struct command{
     char *command;
     struct commandRRR{
@@ -29,6 +36,5 @@ struct command{
     struct commandRRI rriCom;
     struct commandRI riCom;
 };
-
 
 #endif

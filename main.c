@@ -1,25 +1,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <mem.h>
+#include <string.h>
 #include <math.h>
 #include "risc.h"
 
- int toDec (char *binaryCode){
-    int decValue = 0;
+ short int toDec (char *binaryCode){
+    short int decValue = 0;
     for (int i = 0; i < 3; i ++){
         if (binaryCode[i] == '1'){
-            decValue = decValue + pow(2, 2 - i);
+            decValue = (short) (decValue + pow(2, 2 - i));
         }
     }
     return decValue;
 }
-int toDecForImm (char *binaryCode){
-    int decValue = 0;
-    int sign = -1;
+
+short int toDecForImm (char *binaryCode){
+    short int decValue = 0;
+    short int sign = -1;
     for (int i = 1; i < 7; i ++){
         if (binaryCode[i] == '1'){
-            decValue = decValue + pow(2, 6 - i);
+            decValue = (short) (decValue + pow(2, 6 - i));
         }
     }
     if (binaryCode[0] == '1'){
@@ -27,8 +28,9 @@ int toDecForImm (char *binaryCode){
     }
     return decValue;
 }
+
 void outDebugF(int step, FILE* outFile, char *opcode, short int regA, short int regB, short int regCI,
-               short int *regMemory, short int *fixMemory, int REG){
+               short int *regMemory, short int *fixMemory){
     if (!strcmp(opcode, "ADD")){
         fprintf(outFile, "Шаг номер %d \n", step);
         fprintf(outFile, "ADD reg[%d] reg[%d] 0000 reg[%d]\n",regA, regB, regCI);
@@ -59,9 +61,7 @@ void outDebugF(int step, FILE* outFile, char *opcode, short int regA, short int 
         for (int i = 0; i <= fixMemory[1]; i++){
             fprintf(outFile, "Адрес[%d] = %d \n", i, fixMemory[i]);
         }
-
     }else if (!strcmp(opcode, "lui")){
-
     }else if(!strcmp(opcode, "sw")){
         fprintf(outFile, "Шаг номер %d \n", step);
         fprintf(outFile, "sw reg[%d] reg[%d]  imm = %d\n",regA, regB, regCI);
@@ -72,7 +72,6 @@ void outDebugF(int step, FILE* outFile, char *opcode, short int regA, short int 
         for (int i = 0; i <= fixMemory[1]; i++){
             fprintf(outFile, "Адрес[%d] = %d \n", i, fixMemory[i]);
         }
-
     }else if (!strcmp(opcode, "lw")){
         fprintf(outFile, "Шаг номер %d \n", step);
         fprintf(outFile, "lw reg[%d] reg[%d]  imm = %d\n",regA, regB, regCI);
@@ -94,7 +93,6 @@ void outDebugF(int step, FILE* outFile, char *opcode, short int regA, short int 
         for (int i = 0; i <= fixMemory[1]; i++){
             fprintf(outFile, "Адрес[%d] = %d \n", i, fixMemory[i]);
         }
-
     }else if (!strcmp(opcode, "jair")){
         fprintf(outFile, "Шаг номер %d \n", step);
         fprintf(outFile, "jair reg[%d] reg[%d]  imm = %d\n",regA, regB, regCI);
@@ -109,7 +107,7 @@ void outDebugF(int step, FILE* outFile, char *opcode, short int regA, short int 
 }
 
 void outDebugT(int step,char *opcode, short int regA, short int regB, short int regCI,
-               short int *regMemory, short int *fixMemory, int REG){
+               short int *regMemory, short int *fixMemory){
     if (!strcmp(opcode, "ADD")){
         printf("step %d \n", step);
         printf("ADD reg[%d] reg[%d] 0000 reg[%d]\n",regA, regB, regCI);
@@ -142,7 +140,6 @@ void outDebugT(int step,char *opcode, short int regA, short int regB, short int 
         }
 
     }else if (!strcmp(opcode, "lui")){
-
     }else if(!strcmp(opcode, "sw")){
         printf("step %d \n", step);
         printf("sw reg[%d] reg[%d]  imm = %d\n",regA, regB, regCI);
@@ -188,31 +185,32 @@ void outDebugT(int step,char *opcode, short int regA, short int regB, short int 
         }
     }
 }
-
-
+void init (FILE* file, short int* fixMemory){
+   int a;
+   fscanf(file,"%d", &a);
+   int maxSize = a;
+   for (int i = 0; i <= maxSize; i++){
+       fscanf(file,"%d", &a);
+       fixMemory[i] = a;
+   }
+}
 
 int main(){
-    printf("Static MEmory RISC machine simulator\n");
-
-    const int MAXLENGTHLINE = 32;
-    const int MAX_COMMAND = 100; // максимально число команд во вхдном файле
-    const int REG = 8; //число регистров
-    short int *fixMemory = malloc(sizeof(short int) * 1000);
+    printf("Static MEmory RISC machine simulator \n");
     short int regMemory[REG];
+    for (int i = 0; i < REG; i++){
+        regMemory[i] = 0;
+    }
+    short int *fixMemory = malloc(sizeof(short int) * MEMORY_SIZE);
     int countCommand = 0;
     char *opcode;
     char *arg1;
     char *arg2;
     char *arg3;
-    char *workCode;
     int line = 0;
     _Bool workC = true;
-    for (int i = 0; i < REG; i++){
-        regMemory[i] = 0;
-    }
-    struct command* command = malloc(sizeof(struct command) * 100);
+    struct command* command = malloc(sizeof(struct command) * MAX_COMMAND);
     char inputCom[MAXLENGTHLINE];
-
     char *fileName = "command.txt";
     FILE *commandInput;
     commandInput = fopen(fileName, "rt");
@@ -223,7 +221,7 @@ int main(){
         if (!strcmp(opcode, "000")){ //ADD
             arg1 = strtok(NULL, " ");
             arg2 = strtok(NULL, " ");
-            workCode = strtok(NULL, " ");
+            strtok(NULL, " ");
             arg3 = strtok(NULL, "\n");
             command[line].command = "ADD";
             command[line].rrrCom.regA = toDec(arg1);
@@ -297,16 +295,11 @@ int main(){
             countCommand = line;
         }
     }
-
-    //реализовать выполнение самой программы
+    char *inName = "initMachine.txt";
+    FILE *initInput;
+    initInput = fopen(inName, "rt");
+    init(initInput, fixMemory);
     int countCom = 0;
-    //функция initialOrder или начальная загрузка в память
-    fixMemory[0] = 0; //для обнуления
-    fixMemory[1] = 4; //для счета индексов массива адресов
-    fixMemory[2] = 2;
-    fixMemory[3] = 0;
-    fixMemory[4] = 4;
-
     while (workC){
         switch (menu()){
             case 1: { //Full work machine
@@ -362,9 +355,8 @@ int main(){
                 outDebug = fopen(outDebugName, "wt");
                 int stepCount = 0;
                 printf("Count Step \n");
-                int answer;
                 int temp;
-                answer = scanf("%d", &temp);
+                scanf("%d", &temp);
                 stepCount = temp;
                 countCom = 0;
                 while (countCom != stepCount){
@@ -373,20 +365,20 @@ int main(){
                                                                    + regMemory[command[countCom].rrrCom.regC];
                         outDebugF(countCom,outDebug,command[countCom].command, command[countCom].rrrCom.regA,
                                   command[countCom].rrrCom.regB, command[countCom].rrrCom.regC
-                                ,regMemory,fixMemory,REG);
+                                ,regMemory,fixMemory);
                         countCom++;
                     }else if (!strcmp(command[countCom].command, "ADDI")){
                         regMemory[command[countCom].rriCom.regAA] = regMemory[command[countCom].rriCom.regBB] + command[countCom].rriCom.imm;
                         outDebugF(countCom,outDebug,command[countCom].command, command[countCom].rriCom.regAA,
                                   command[countCom].rriCom.regBB, command[countCom].rriCom.imm
-                                ,regMemory,fixMemory,REG);
+                                ,regMemory,fixMemory);
                         countCom++;
                     }else if (!strcmp(command[countCom].command, "NAND")){
                         regMemory[command[countCom].rrrCom.regA] = (regMemory[command[countCom].rrrCom.regB]
                                                                     & regMemory[command[countCom].rrrCom.regC]);
                         outDebugF(countCom,outDebug,command[countCom].command, command[countCom].rrrCom.regA,
                                   command[countCom].rrrCom.regB, command[countCom].rrrCom.regC
-                                ,regMemory,fixMemory,REG);
+                                ,regMemory,fixMemory);
                         countCom++;
                     }else if (!strcmp(command[countCom].command, "lui")){
 
@@ -394,45 +386,83 @@ int main(){
                         fixMemory[regMemory[command[countCom].rriCom.regBB] + command[countCom].rriCom.imm] = regMemory[command[countCom].rriCom.regAA];
                         outDebugF(countCom,outDebug,command[countCom].command, command[countCom].rriCom.regAA,
                                   command[countCom].rriCom.regBB, command[countCom].rriCom.imm
-                                ,regMemory,fixMemory,REG);
+                                ,regMemory,fixMemory);
                         countCom++;
                     }else if (!strcmp(command[countCom].command, "lw")){
                         regMemory[command[countCom].rriCom.regAA] = fixMemory[regMemory[command[countCom].rriCom.regBB] + command[countCom].rriCom.imm];
                         outDebugF(countCom,outDebug,command[countCom].command, command[countCom].rriCom.regAA,
                                   command[countCom].rriCom.regBB, command[countCom].rriCom.imm
-                                ,regMemory,fixMemory,REG);
+                                ,regMemory,fixMemory);
                         countCom++;
                     }else if (!strcmp(command[countCom].command, "beg")){
                         if (regMemory[command[countCom].rriCom.regAA] == regMemory[command[countCom].rriCom.regBB]){
                             outDebugF(countCom,outDebug,command[countCom].command, command[countCom].rriCom.regAA,
                                       command[countCom].rriCom.regBB, command[countCom].rriCom.imm
-                                    ,regMemory,fixMemory,REG);
+                                    ,regMemory,fixMemory);
                             countCom = countCom + 1 + command[countCom].rriCom.imm;
                         } else{
                             outDebugF(countCom,outDebug,command[countCom].command, command[countCom].rriCom.regAA,
                                       command[countCom].rriCom.regBB, command[countCom].rriCom.imm
-                                    ,regMemory,fixMemory,REG);
+                                    ,regMemory,fixMemory);
                             countCom++;
                         }
                     }else if (!strcmp(command[countCom].command, "jair")){
                         regMemory[command[countCom].rriCom.regAA] = countCom + 1;
                         outDebugF(countCom,outDebug,command[countCom].command, command[countCom].rriCom.regAA,
                                   command[countCom].rriCom.regBB, command[countCom].rriCom.imm
-                                ,regMemory,fixMemory,REG);
+                                ,regMemory,fixMemory);
                         countCom = regMemory[command[countCom].rriCom.regBB];
+                    }
+                    if (countCom == countCommand){
+                        printf("STOP");
+                        break;
                     }
                 }
                 workC = false;
                 break;
             }
             case 3:{
+                printf("Excavut with \n");
+                int temp;
+                scanf("%d", &temp);
+                while (countCom != temp){
+                    if (!strcmp(command[countCom].command, "ADD")){
+                        regMemory[command[countCom].rrrCom.regA] = regMemory[command[countCom].rrrCom.regB]
+                                                                   + regMemory[command[countCom].rrrCom.regC];
+                        countCom++;
+                    }else if (!strcmp(command[countCom].command, "ADDI")){
+                        regMemory[command[countCom].rriCom.regAA] = regMemory[command[countCom].rriCom.regBB] + command[countCom].rriCom.imm;
+                        countCom++;
+                    }else if (!strcmp(command[countCom].command, "NAND")){
+                        regMemory[command[countCom].rrrCom.regA] = (regMemory[command[countCom].rrrCom.regB]
+                                                                    & regMemory[command[countCom].rrrCom.regC]);
+                        countCom++;
+                    }else if (!strcmp(command[countCom].command, "lui")){
+
+                    }else if(!strcmp(command[countCom].command, "sw")){
+                        fixMemory[regMemory[command[countCom].rriCom.regBB] + command[countCom].rriCom.imm] = regMemory[command[countCom].rriCom.regAA];
+                        countCom++;
+                    }else if (!strcmp(command[countCom].command, "lw")){
+                        regMemory[command[countCom].rriCom.regAA] = fixMemory[regMemory[command[countCom].rriCom.regBB] + command[countCom].rriCom.imm];
+                        countCom++;
+                    }else if (!strcmp(command[countCom].command, "beg")){
+                        if (regMemory[command[countCom].rriCom.regAA] == regMemory[command[countCom].rriCom.regBB]){
+                            countCom = countCom + 1 + command[countCom].rriCom.imm;
+                        } else{
+                            countCom++;
+                        }
+                    }else if (!strcmp(command[countCom].command, "jair")){
+                        regMemory[command[countCom].rriCom.regAA] = countCom + 1;
+                        countCom = regMemory[command[countCom].rriCom.regBB];
+                    }
+                }
                 while (countCom != countCommand || workC != false){
                     if (!strcmp(command[countCom].command, "ADD")){
                         regMemory[command[countCom].rrrCom.regA] = regMemory[command[countCom].rrrCom.regB]
                                                                    + regMemory[command[countCom].rrrCom.regC];
                         outDebugT(countCom,command[countCom].command, command[countCom].rrrCom.regA,
                                   command[countCom].rrrCom.regB, command[countCom].rrrCom.regC
-                                ,regMemory,fixMemory,REG);
+                                ,regMemory,fixMemory);
                         while (true){
                             printf("next step? \n");
                             printf("1 - yes 0 - no \n");
@@ -446,23 +476,25 @@ int main(){
                             }
                             break;
                         }
-
                     }else if (!strcmp(command[countCom].command, "ADDI")){
                         regMemory[command[countCom].rriCom.regAA] = regMemory[command[countCom].rriCom.regBB] + command[countCom].rriCom.imm;
                         outDebugT(countCom,command[countCom].command, command[countCom].rriCom.regAA,
                                   command[countCom].rriCom.regBB, command[countCom].rriCom.imm
-                                ,regMemory,fixMemory,REG);
+                                ,regMemory,fixMemory);
                         while (true){
                             printf("next step? \n");
                             printf("1 - yes 0 - no \n");
                             int temp;
-                            temp = scanf("%d", &temp);
+                            scanf("%d", &temp);
                             if (temp == 1){
                                 countCom++;
                             }
                             else{
                                 workC = false;
                             }
+                            break;
+                        }
+                        if (!workC){
                             break;
                         }
                     }else if (!strcmp(command[countCom].command, "NAND")){
@@ -470,12 +502,12 @@ int main(){
                                                                     & regMemory[command[countCom].rrrCom.regC]);
                         outDebugT(countCom,command[countCom].command, command[countCom].rrrCom.regA,
                                   command[countCom].rrrCom.regB, command[countCom].rrrCom.regC
-                                ,regMemory,fixMemory,REG);
+                                ,regMemory,fixMemory);
                         while (true){
                             printf("next step? \n");
                             printf("1 - yes 0 - no \n");
                             int temp;
-                            temp = scanf("%d", &temp);
+                            scanf("%d", &temp);
                             if (temp == 1){
                                 countCom++;
                             }
@@ -484,18 +516,42 @@ int main(){
                             }
                             break;
                         };
+                        if (!workC){
+                            break;
+                        }
                     }else if (!strcmp(command[countCom].command, "lui")){
 
                     }else if(!strcmp(command[countCom].command, "sw")){
                         fixMemory[regMemory[command[countCom].rriCom.regBB] + command[countCom].rriCom.imm] = regMemory[command[countCom].rriCom.regAA];
                         outDebugT(countCom,command[countCom].command, command[countCom].rriCom.regAA,
                                   command[countCom].rriCom.regBB, command[countCom].rriCom.imm
-                                ,regMemory,fixMemory,REG);
+                                ,regMemory,fixMemory);
                         while (true){
                             printf("next step? \n");
                             printf("1 - yes 0 - no \n");
                             int temp;
-                            temp = scanf("%d", &temp);
+                            scanf("%d", &temp);
+                            if (temp == 1){
+                                countCom++;
+                            }
+                            else{
+                                workC = false;
+                            }
+                            break;
+                            if (!workC){
+                                break;
+                            }
+                        }
+                    }else if (!strcmp(command[countCom].command, "lw")){
+                        regMemory[command[countCom].rriCom.regAA] = fixMemory[regMemory[command[countCom].rriCom.regBB] + command[countCom].rriCom.imm];
+                        outDebugT(countCom,command[countCom].command, command[countCom].rriCom.regAA,
+                                  command[countCom].rriCom.regBB, command[countCom].rriCom.imm
+                                ,regMemory,fixMemory);
+                        while (true){
+                            printf("next step? \n");
+                            printf("1 - yes 0 - no \n");
+                            int temp;
+                            scanf("%d", &temp);
                             if (temp == 1){
                                 countCom++;
                             }
@@ -504,34 +560,19 @@ int main(){
                             }
                             break;
                         }
-                    }else if (!strcmp(command[countCom].command, "lw")){
-                        regMemory[command[countCom].rriCom.regAA] = fixMemory[regMemory[command[countCom].rriCom.regBB] + command[countCom].rriCom.imm];
-                        outDebugT(countCom,command[countCom].command, command[countCom].rriCom.regAA,
-                                  command[countCom].rriCom.regBB, command[countCom].rriCom.imm
-                                ,regMemory,fixMemory,REG);
-                        while (true){
-                            printf("next step? \n");
-                            printf("1 - yes 0 - no \n");
-                            int temp;
-                            temp = scanf("%d", &temp);
-                            if (temp == 1){
-                                countCom++;
-                            }
-                            else{
-                                workC = false;
-                            }
+                        if (!workC){
                             break;
                         }
                     }else if (!strcmp(command[countCom].command, "beg")){
                         if (regMemory[command[countCom].rriCom.regAA] == regMemory[command[countCom].rriCom.regBB]){
                             outDebugT(countCom,command[countCom].command, command[countCom].rriCom.regAA,
                                       command[countCom].rriCom.regBB, command[countCom].rriCom.imm
-                                    ,regMemory,fixMemory,REG);
+                                    ,regMemory,fixMemory);
                             while (true){
                                 printf("next step? \n");
                                 printf("1 - yes 0 - no \n");
                                 int temp;
-                                temp = scanf("%d", &temp);
+                                scanf("%d", &temp);
                                 if (temp == 1){
                                     countCom = countCom + 1 + command[countCom].rriCom.imm;
                                 }
@@ -540,15 +581,18 @@ int main(){
                                 }
                                 break;
                             }
+                            if (!workC){
+                                break;
+                            }
                         } else{
                             outDebugT(countCom,command[countCom].command, command[countCom].rriCom.regAA,
                                       command[countCom].rriCom.regBB, command[countCom].rriCom.imm
-                                    ,regMemory,fixMemory,REG);
+                                    ,regMemory,fixMemory);
                             while (true){
                                 printf("next step? \n");
                                 printf("1 - yes 0 - no \n");
                                 int temp;
-                                temp = scanf("%d", &temp);
+                                scanf("%d", &temp);
                                 if (temp == 1){
                                     countCom++;
                                 }
@@ -557,17 +601,20 @@ int main(){
                                 }
                                 break;
                             }
+                            if (!workC){
+                                break;
+                            }
                     }
                     }else if (!strcmp(command[countCom].command, "jair")){
                         regMemory[command[countCom].rriCom.regAA] = countCom + 1;
                         outDebugT(countCom,command[countCom].command, command[countCom].rriCom.regAA,
                                   command[countCom].rriCom.regBB, command[countCom].rriCom.imm
-                                ,regMemory,fixMemory,REG);
+                                ,regMemory,fixMemory);
                         while (true){
                             printf("next step? \n");
                             printf("1 - yes 0 - no \n");
                             int temp;
-                            temp = scanf("%d", &temp);
+                            scanf("%d", &temp);
                             if (temp == 1){
                                 countCom = regMemory[command[countCom].rriCom.regBB];
                             }
@@ -576,11 +623,21 @@ int main(){
                             }
                             break;
                         }
+                        if (!workC){
+                            break;
+                        }
+                    }
+                    if (countCom == countCommand){
+                        printf("STOP\n");
+                        break;
                     }
                 }
                 break;
+                workC = false;
             }
         }
     }
+    free(fixMemory);
+    free(command);
     return 0;
 }
