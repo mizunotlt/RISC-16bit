@@ -1,15 +1,15 @@
 #include "risc.h"
 
-
 int menu()
 {
-	int end = 3;
+	int end = 4;
 	int start = 1;
 	int temp ;
     int  answer;
 	printf( "1. FULL work RISC \n"
-			"2. excuvate step by step \n"
-			"3. excuvate exact steps() \n"
+            "2. excuvate exact steps() \n"
+			"3. excuvate step by step \n"
+            "4. excuvate exact steps without outDebugFile \n"
 			);
 	while (true)
 	{
