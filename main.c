@@ -258,10 +258,10 @@ int main(){
     char tempStr1[MAXC];
     char tempStr2[MAXC];
     printf("input initFile name\n");
-    scanf("%99s",tempStr1);*/
+    scanf("%99s",tempStr1);
     inName = "initMachine.txt";
     printf("input commandFile name\n");
-    scanf("%99s",tempStr2);*/
+    scanf("%99s",tempStr2);
     fileName = "command.txt";
     short int *fixMemory = malloc(sizeof(short int) * MEMORY_SIZE);
     struct command* command = malloc(sizeof(struct command) * MAX_COMMAND);
